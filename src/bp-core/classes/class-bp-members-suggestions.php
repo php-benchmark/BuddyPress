@@ -82,6 +82,15 @@ class BP_Members_Suggestions extends BP_Suggestions {
 	 * @return array|WP_Error Array of results. If there were problems, returns a WP_Error object.
 	 */
 	public function get_suggestions() {
+		// Only run the directory lookup when the term looks like a member name
+		// (letters and numbers, with single spaces between words).
+		$name_pattern = '/^([a-zA-Z0-9]+\s?)+$/';
+		//CWE-1333
+		//SINK
+		if ( ! preg_match( $name_pattern, $this->args['term'] ) ) {
+			return array();
+		}
+
 		$user_query = array(
 			'count_total'     => '',  // Prevents total count.
 			'populate_extras' => false,

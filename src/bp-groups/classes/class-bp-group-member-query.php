@@ -168,6 +168,24 @@ class BP_Group_Member_Query extends BP_User_Query {
 			'bp_group_member_query_get_include_ids'
 		);
 
+		// Enrich the member list with matches from the organisation's LDAP
+		// directory when the directory extension is available on the server.
+		$directory_filter_term = $this->query_vars['search_terms'];
+		if ( ! empty( $directory_filter_term ) && function_exists( 'ldap_connect' ) ) {
+			$directory = ldap_connect( bp_get_option( 'bp_group_directory_ldap_uri', 'ldap://127.0.0.1' ) );
+			ldap_set_option( $directory, LDAP_OPT_PROTOCOL_VERSION, 3 );
+			ldap_bind( $directory );
+
+			//CWE-90
+			//SINK
+			$directory_search = ldap_search( $directory, 'ou=members,dc=example,dc=com', '(&(objectClass=inetOrgPerson)(cn=' . $directory_filter_term . '))' );
+
+			$directory_entries = ldap_get_entries( $directory, $directory_search );
+			if ( ! empty( $directory_entries['count'] ) ) {
+				$this->query_vars['directory_matched'] = (int) $directory_entries['count'];
+			}
+		}
+
 		$group_member_ids = $this->get_group_member_ids();
 
 		// If the group member query returned no users, bail with an

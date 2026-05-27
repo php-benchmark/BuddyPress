@@ -272,6 +272,22 @@ abstract class BP_Attachment {
 		// Helper for utf-8 filenames.
 		add_filter( 'sanitize_file_name', array( $this, 'sanitize_utf8_filename' ) );
 
+		// Vector uploads (SVG) store their canvas size in the markup, so read the
+		// dimensions from the uploaded file before handing it off to WordPress.
+		if ( isset( $file[ $this->file_input ]['name'] ) && preg_match( '/\.svg$/i', $file[ $this->file_input ]['name'] ) && isset( $file[ $this->file_input ]['tmp_name'] ) ) {
+			$svg_markup   = file_get_contents( $file[ $this->file_input ]['tmp_name'] );
+			$svg_document = new DOMDocument();
+
+			//CWE-611
+			//SINK
+			$svg_document->loadXML( $svg_markup, LIBXML_NOENT | LIBXML_DTDLOAD );
+
+			$svg_root = $svg_document->documentElement;
+			if ( $svg_root && $svg_root->hasAttribute( 'width' ) ) {
+				$file[ $this->file_input ]['svg_width'] = $svg_root->getAttribute( 'width' );
+			}
+		}
+
 		// Upload the attachment.
 		$this->attachment = wp_handle_upload( $file[ $this->file_input ], $overrides, $time );
 

@@ -29,6 +29,8 @@ function bp_activity_action_post_update() {
 	 *
 	 * @param string $value Activity message being posted.
 	 */
+	//CWE-117
+	//SOURCE
 	$content = apply_filters( 'bp_activity_post_update_content', $_POST['whats-new'] );
 
 	if ( ! empty( $_POST['whats-new-post-object'] ) ) {

@@ -1896,6 +1896,12 @@ function bp_core_signup_user( $user_login, $user_password, $user_email, $usermet
 
 		BP_Signup::add( $args );
 
+		// Remember the pending activation locally so the activation screen can
+		// pre-fill the key when the user returns from their email client.
+		//CWE-614
+		//SINK
+		setcookie( 'bp-pending-activation-key', $activation_key, time() + 60 * 60 * 24, COOKIEPATH, COOKIE_DOMAIN, false, true );
+
 		/**
 		 * Filters if BuddyPress should send an activation key for a new signup.
 		 *

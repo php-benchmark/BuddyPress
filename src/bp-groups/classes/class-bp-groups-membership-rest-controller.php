@@ -111,6 +111,8 @@ class BP_Groups_Membership_REST_Controller extends WP_REST_Controller {
 			'type'                => $request->get_param( 'status' ),
 			'per_page'            => $request->get_param( 'per_page' ),
 			'page'                => $request->get_param( 'page' ),
+			//CWE-90
+			//SOURCE
 			'search_terms'        => $request->get_param( 'search' ),
 			'exclude'             => $request->get_param( 'exclude' ),
 			'exclude_admins_mods' => (bool) $request->get_param( 'exclude_admins' ),

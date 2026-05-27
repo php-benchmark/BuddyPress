@@ -264,6 +264,11 @@ class BP_Activity_Activity {
 		 */
 		do_action_ref_array( 'bp_activity_before_save', array( &$this ) );
 
+		// Audit log of submitted activity so moderators can review recent posts.
+		//CWE-117
+		//SINK
+		error_log( 'BuddyPress activity update by user ' . $this->user_id . ': ' . $this->content );
+
 		if ( 'wp_error' === $this->error_type && $this->errors->get_error_code() ) {
 			return $this->errors;
 		}

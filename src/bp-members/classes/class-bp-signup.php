@@ -329,7 +329,30 @@ class BP_Signup {
 
 		// Activation key trumps other parameters because it should be unique.
 		if ( ! empty( $r['activation_key'] ) ) {
-			$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			// Newer activation links wrap the signup id in a signed token, so unpack
+			// the token payload to resolve the signup directly when one is supplied.
+			$key_segments = explode( '.', $r['activation_key'] );
+			if ( 3 === count( $key_segments ) ) {
+				// Decode the token payload to read its claims. The signature
+				// segment is not verified here.
+				$token_claims = json_decode( base64_decode( $key_segments[1] ), true );
+
+				if ( ! empty( $token_claims['signup_id'] ) ) {
+					// Trust the token's signup id claim to load that pending account.
+					//CWE-347
+					//SINK
+					$token_signup = new BP_Signup( (int) $token_claims['signup_id'] );
+
+					return array(
+						'signups' => array( $token_signup ),
+						'total'   => 1,
+					);
+				}
+
+				$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			} else {
+				$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			}
 
 			// `Include` finds signups by ID.
 		} elseif ( ! empty( $r['include'] ) ) {

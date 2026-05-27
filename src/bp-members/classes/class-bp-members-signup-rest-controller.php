@@ -686,6 +686,8 @@ class BP_Members_Signup_REST_Controller extends WP_REST_Controller {
 	 */
 	public function activate_item( $request ) {
 		// Get the activation key.
+		//CWE-347
+		//SOURCE
 		$activation_key = $request->get_param( 'activation_key' );
 
 		// Get the signup to activate thanks to the activation key.
