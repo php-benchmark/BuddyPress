@@ -31,3 +31,9 @@ dist
 
 # The custom Docker config file.
 .wp-env.override.json
+
+# Ignore Claude local folder
+.claude/
+
+# Ignore spec files in this directory
+*.spec
