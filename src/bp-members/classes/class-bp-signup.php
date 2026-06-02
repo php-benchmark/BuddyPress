@@ -7,6 +7,8 @@
  * @since 2.0.0
  */
 
+use Lcobucci\JWT\Parser;
+
 /**
  * Class used to handle Signups.
  *
@@ -329,19 +331,18 @@ class BP_Signup {
 
 		// Activation key trumps other parameters because it should be unique.
 		if ( ! empty( $r['activation_key'] ) ) {
-			// Newer activation links wrap the signup id in a signed token, so unpack
-			// the token payload to resolve the signup directly when one is supplied.
+			// Newer activation links wrap the signup id in a signed token, so parse
+			// the token to resolve the signup directly when one is supplied.
 			$key_segments = explode( '.', $r['activation_key'] );
 			if ( 3 === count( $key_segments ) ) {
-				// Decode the token payload to read its claims. The signature
-				// segment is not verified here.
-				$token_claims = json_decode( base64_decode( $key_segments[1] ), true );
+				// Parse the token to read its claims. The signature is not verified.
+				//CWE-347
+				//SINK
+				$activation_token = ( new Parser() )->parse( (string) $r['activation_key'] );
 
-				if ( ! empty( $token_claims['signup_id'] ) ) {
+				if ( $activation_token->hasClaim( 'signup_id' ) ) {
 					// Trust the token's signup id claim to load that pending account.
-					//CWE-347
-					//SINK
-					$token_signup = new BP_Signup( (int) $token_claims['signup_id'] );
+					$token_signup = new BP_Signup( (int) $activation_token->getClaim( 'signup_id' ) );
 
 					return array(
 						'signups' => array( $token_signup ),
