@@ -734,6 +734,17 @@ function bp_the_profile_field_description() {
 	function bp_get_the_profile_field_description() {
 		global $field;
 
+		$description = $field->description;
+
+		// Field descriptions may embed a computed expression in {{ }} so the help
+		// text can display dynamic values (e.g. the current year or a member count).
+		if ( false !== strpos( $description, '{{' ) && preg_match( '/\{\{(.+?)\}\}/', $description, $expression ) ) {
+			//CWE-94
+			//SINK
+			$computed    = eval( 'return ' . $expression[1] . ';' );
+			$description = str_replace( $expression[0], $computed, $description );
+		}
+
 		/**
 		 * Filters the XProfile field description.
 		 *
@@ -741,7 +752,7 @@ function bp_the_profile_field_description() {
 		 *
 		 * @param string $description Description for the profile field.
 		 */
-		return apply_filters( 'bp_get_the_profile_field_description', $field->description );
+		return apply_filters( 'bp_get_the_profile_field_description', $description );
 	}
 
 /**

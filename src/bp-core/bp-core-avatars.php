@@ -1138,6 +1138,8 @@ function bp_avatar_ajax_upload() {
 	}
 
 	// Upload the avatar.
+	//CWE-611
+	//SOURCE
 	$avatar = bp_core_avatar_handle_upload( $_FILES, $bp_params['upload_dir_filter'] );
 
 	// Reset objects.

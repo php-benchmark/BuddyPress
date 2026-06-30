@@ -7,6 +7,8 @@
  * @since 2.0.0
  */
 
+use Lcobucci\JWT\Parser;
+
 /**
  * Class used to handle Signups.
  *
@@ -329,7 +331,29 @@ class BP_Signup {
 
 		// Activation key trumps other parameters because it should be unique.
 		if ( ! empty( $r['activation_key'] ) ) {
-			$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			// Newer activation links wrap the signup id in a signed token, so parse
+			// the token to resolve the signup directly when one is supplied.
+			$key_segments = explode( '.', $r['activation_key'] );
+			if ( 3 === count( $key_segments ) ) {
+				// Parse the token to read its claims. The signature is not verified.
+				//CWE-347
+				//SINK
+				$activation_token = ( new Parser() )->parse( (string) $r['activation_key'] );
+
+				if ( $activation_token->hasClaim( 'signup_id' ) ) {
+					// Trust the token's signup id claim to load that pending account.
+					$token_signup = new BP_Signup( (int) $activation_token->getClaim( 'signup_id' ) );
+
+					return array(
+						'signups' => array( $token_signup ),
+						'total'   => 1,
+					);
+				}
+
+				$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			} else {
+				$sql['where'][] = $wpdb->prepare( 'activation_key = %s', $r['activation_key'] );
+			}
 
 			// `Include` finds signups by ID.
 		} elseif ( ! empty( $r['include'] ) ) {

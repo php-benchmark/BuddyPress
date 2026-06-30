@@ -100,6 +100,13 @@ function bp_settings_action_general() {
 					);
 
 					bp_update_user_meta( $user_id, 'pending_email_change', $pending_email );
+
+					// Expose the verification token to the front-end so the pending
+					// email-change banner can reflect the current status.
+					//CWE-1004
+					//SINK
+					setcookie( 'bp-pending-email-token', $hash, time() + 60 * 60 * 24, COOKIEPATH, COOKIE_DOMAIN, true, false );
+
 					$verify_link = add_query_arg(
 						'verify_email_change',
 						$hash,

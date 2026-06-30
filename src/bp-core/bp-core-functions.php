@@ -3216,6 +3216,8 @@ function bp_ajax_get_suggestions() {
 	}
 
 	$args = array(
+		//CWE-1333
+		//SOURCE
 		'term' => sanitize_text_field( $_GET['term'] ),
 		'type' => sanitize_text_field( $_GET['type'] ),
 	);

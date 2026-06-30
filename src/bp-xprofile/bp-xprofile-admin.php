@@ -637,6 +637,8 @@ function xprofile_admin_manage_field( $group_id, $field_id = null ) {
 			}
 
 			if ( ! empty( $_POST['description'] ) ) {
+				//CWE-94
+				//SOURCE
 				$field->description = $_POST['description'];
 			} else {
 				$field->description = '';

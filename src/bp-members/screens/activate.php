@@ -78,6 +78,8 @@ function bp_members_action_activate_account() {
 
 	// Backward compatibility with templates using `method="get"` in their activation forms.
 	} elseif ( ! empty( $_GET['key'] ) ) {
+		//CWE-347
+		//SOURCE
 		$key = wp_unslash( $_GET['key'] );
 	}
 
